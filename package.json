@@ -1,0 +1,19 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "WebGL app built with Node.js",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "Vincent Moore",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "regl": "^1.3.0"
+  },
+  "devDependencies": {
+    "browserify": "^14.5.0",
+    "budo": "^10.0.4"
+  }
+}

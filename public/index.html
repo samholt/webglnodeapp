@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>WebGL Node.js App</title>
+   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+   <style>
+      html, body {
+         overflow: hidden;
+         width: 100%;
+         height: 100%;
+         margin: 0;
+         padding: 0;
+         font-family: 'Roboto', sans-serif;
+      }
+      #renderCanvas {
+         width: 100%;
+         height: 100%;
+         touch-action: none;
+      }
+
+    /* unvisited link */
+````a:link {
+        color: #4accff;
+    }
+
+    /* visited link */
+    a:visited {
+        color: #fa5d0f;
+    }
+
+    /* mouse over link */
+    a:hover {
+        color: #aadffa;
+    }
+
+    /* selected link */
+    a:active {
+        color: #ff7d4a;
+    }
+
+    #content {
+        color: #fff;
+        position: absolute;
+        width: 100%;
+        height: 60px;
+        bottom: 0;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.0);
+        line-height: 0em;
+        padding-bottom: 2.4em;
+    }
+
+    #blurb {
+        width: 460px;
+        height: auto;
+        margin-left: 3em;
+    }
+
+    #blurb h3 {
+        font-kerning: normal;
+        font-size: 1.4em;
+        letter-spacing: 0.1em;
+        font-weight: 200;
+    }
+   </style>
+   <script src="js/babylon_master.js"></script>
+</head>
+<body>
+   <canvas id="renderCanvas"></canvas>
+   <div id="content">
+        <div id="blurb">
+          <h3>WebGL/Node.js</h3> 
+          <p>Model built with Blender and PBR materials</p><hr />
+          <p><a href="https://github.com/nomadicvince">GitHub</a></p>
+        </div>
+    </div>
+   <script>
+       if (BABYLON.Engine.isSupported()) {
+           var canvas = document.getElementById("renderCanvas");
+           var engine = new BABYLON.Engine(canvas, true);
+           var scene = new BABYLON.Scene(engine);
+           var camera = new BABYLON.ArcRotateCamera("Camera", 99.4, 1.1, 13, new BABYLON.Vector3(0, 0, 0), scene);
+
+           BABYLON.SceneLoader.Load("data/", "bed_test.babylon", engine, function (newScene) {
+               // Wait for textures and shaders to be ready
+               newScene.executeWhenReady(function () {
+
+                   newScene.activeCamera = camera;
+
+                   // Attach camera to canvas inputs
+                   newScene.activeCamera.attachControl(canvas, true);
+                   newScene.activeCamera.upperBetaLimit = Math.PI /2;
+                   newScene.activeCamera.lowerRadiusLimit = 4;
+
+                   //Environment HDRI
+                   var skybox = BABYLON.Mesh.CreateBox("skyBox", 100.0, newScene);
+                   var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", newScene);
+                   skyboxMaterial.backFaceCulling = false;
+                   skyboxMaterial.disableLighting = true;
+                   skybox.infiniteDistance = true;
+                   skyboxMaterial.reflectionTexture = new BABYLON.HDRCubeTexture("sky/cloudless.hdr", newScene, 512);
+                   skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                   skybox.material = skyboxMaterial;
+
+                   //Lights
+                   var light = new BABYLON.DirectionalLight("Dir", new BABYLON.Vector3(0, -1, 0), newScene);
+                   light.diffuse = new BABYLON.Color3(1, 1, 1);
+                   light.specular = new BABYLON.Color3(1, 1, 1);
+                   light.intensity = 0.2;
+
+                   //PBR Materials and textures
+                   var hdrTexture = new BABYLON.HDRCubeTexture("sky/cloudless.hdr", newScene, 512);
+
+                   //Carpet
+                   var carpetTex = new BABYLON.Texture("textures/carpet_texture.jpg", newScene);
+                   carpetTex.uScale = 4;
+                   carpetTex.vScale = 6;
+
+                   var carpetMat = new BABYLON.PBRMaterial("Carpet", newScene);
+                   carpetMat.albedoTexture = carpetTex;
+                   carpetMat.reflectionTexture = hdrTexture;
+                   carpetMat.reflectionTexture.coordinatesMode = BABYLON.Texture.PLANAR_MODE;
+                   carpetMat.reflectivityColor = new BABYLON.Color3(0.0, 0.0, 0.0);
+                   carpetMat.microSurface = .3;
+                   carpetMat.directIntensity = .7;
+                   carpetMat.environmentIntensity = 3;
+                   carpetMat.cameraExposure = 0.86;
+                   carpetMat.cameraContrast = 1.66;
+
+                   var carpet = newScene.getMeshByName("Carpet");
+                   carpet.material = carpetMat;
+
+                   //Bed Materials and Textures
+
+                   //Comforter
+                   var comforterTex = new BABYLON.Texture("textures/comforter_texture.jpg", newScene);
+                   comforterTex.bumpTexture = new BABYLON.Texture("textures/comforter_textureNRM.jpg", newScene);
+                   comforterTex.uScale = .2;
+                   comforterTex.vScale = 1;
+
+                   var comforterMat = new BABYLON.PBRMaterial("Comforter", newScene);
+                   comforterMat.albedoTexture = comforterTex;
+                   comforterMat.reflectionTexture = hdrTexture;
+                   comforterMat.reflectionTexture.coordinatesMode = BABYLON.Texture.PLANAR_MODE;
+                   comforterMat.reflectivityColor = new BABYLON.Color3(0.6, 0.6, 0.6);
+                   comforterMat.microSurface = 0.2;
+                   comforterMat.directIntensity = .7;
+                   comforterMat.environmentIntensity = 3;
+                   comforterMat.cameraExposure = 0.90;
+                   comforterMat.cameraContrast = 1.80;
+
+                   var comforter = newScene.getMeshByName("luxury_bed_cover");
+                   comforter.material = comforterMat;
+
+                   var cushion1 = newScene.getMeshByName("luxury_bed_cushion.001");
+                   cushion1.material = comforterMat;
+
+                   var cushion2 = newScene.getMeshByName("luxury_bed_cushion.002");
+                   cushion2.material = comforterMat;
+
+                   var cushion_detail = newScene.getMeshByName("luxury_bed_cushion.004");
+                   cushion_detail.material = comforterMat;
+
+                   //Bed wood
+                   //var woodTex = new BABYLON.Texture("textures/cherry.jpg", newScene);
+                   //woodTex.bumpTexture = new BABYLON.Texture("textures/cherry_hn.jpg", newScene);
+                   //woodTex.uScale = 1;
+                  // woodTex.vScale = 1;
+
+                   var woodMat = new BABYLON.PBRMaterial("Comforter", newScene);
+                   woodMat.albedoColor = new BABYLON.Color3(0.0, 0.0, 0.0);
+                   woodMat.reflectionTexture = hdrTexture;
+                   woodMat.reflectionTexture.coordinatesMode = BABYLON.Texture.PLANAR_MODE;
+                   woodMat.reflectivityColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                   woodMat.microSurface = 0.7;
+                   woodMat.directIntensity = .7;
+                   woodMat.environmentIntensity = 3;
+                   woodMat.cameraExposure = 0.90;
+                   woodMat.cameraContrast = 1.80;
+
+                   var wood = newScene.getMeshByName("luxury_bed_footboard");
+                   wood.material = woodMat;
+
+                   var wood2 = newScene.getMeshByName("luxury_bed_headboard");
+                   wood2.material = woodMat;
+
+                   var wood3 = newScene.getMeshByName("luxury_bed_headboardtop");
+                   wood3.material = woodMat;
+
+                   // Once the scene is loaded, just register a render loop to render it
+                   engine.runRenderLoop(function() {
+                       newScene.render();
+                   });
+               });
+           }, function (progress) {
+               // To do: give progress feedback to user
+           });
+       }
+   </script>
+</body>
+</html>
