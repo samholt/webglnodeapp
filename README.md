@@ -1,2 +1,2 @@
-# webglnodeapp
-WebGL app build with Node.js and Express
+# WebGL/Node.js App
+WebGL app built with Node.js and Express
